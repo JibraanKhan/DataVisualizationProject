@@ -120,13 +120,13 @@ var initialize = function(dataset){
               .attr('transform', 'translate(' + width/2 + ',' + (height + margins.bottom) + ')')
               .text('Students')
   all_students.append('g')
-              .attr('transform', 'translate(' + 20 +','+ 0 + ')')
+              .attr('transform', 'translate(' + (margins.left - (margins.left * 0.3)) +','+ 0 + ')')
               .classed('yAxis', true)
               .call(yAxis);
   all_students.append('text')
               .classed('YLabel', true)
               .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + 12 +','+ screen.height/2 + ') rotate(-90)')
+              .attr('transform', 'translate(' + (margins.left * 0.5) +','+ screen.height/2 + ') rotate(-90)')
               .text('Total Percentage')
 }
 
