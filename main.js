@@ -1,10 +1,4 @@
-var dataPromise = d3.json('class.json');
-
-function compare(a, b) {
-   if (a[1] < b[1]) return -1;
-   if (a[1] > b[1]) return 1;
-   return 0;
- }
+var dataPromise = d3.json('class.json')
 
 dataPromise.then(function(data){
   initialize(data);
@@ -13,121 +7,34 @@ function(error){
   console.log(error);
 })
 
-var initialize = function(dataset){
-  var total_percentages = return_totals(dataset);
-  var screen = {
-    width:800,
-    height:500,
-  };
-  var margins = {
-    top:screen.height * 0.05,
-    left:screen.width * 0.1,
-    bottom:screen.height * 0.1,
-    right:screen.width * 0.4,
-  };
-  var width = screen.width - margins.left - margins.right;
-  var height = screen.height - margins.top - margins.bottom;
-  var svg = d3.select('body')
-              .append('svg')
-              .attr('width', screen.width)
-              .attr('height', screen.height);
-  var all_students = svg.append('g')
-                        .classed('Students', true);
-  var xRange = d3.range(total_percentages.length);
-  var xScale = d3.scaleBand()
-                 .domain(xRange)
-                 .rangeRound([margins.left, width])
-                 .padding(0.05);
-  var xScaleAxis = d3.scaleBand()
-                 .domain(xRange.map(function(num){ return num+1; }))
-                 .rangeRound([margins.left, width])
-                 .padding(0.05);
-  var xAxis = d3.axisTop(xScaleAxis)
-                .ticks(total_percentages.length - 1);
-  var yScale = d3.scaleLinear()
-                 .domain([0, 100])
-                 .range([height, margins.top]);
-  var yAxis = d3.axisRight(yScale)
-                .ticks(5);
-
-  var rects = all_students.selectAll('rect')
-                          .data(total_percentages)
-                          .enter()
-                          .append('rect')
-                          .attr('y', function(d){
-                            return yScale(d[1]);
-                          })
-                          .attr('x', function(d, i){
-                            return xScale(i);
-                          })
-                          .attr('width', xScale.bandwidth())
-                          .attr('height', function(d){
-                            return height - yScale(d[1])
-                          })
-                          .attr('fill', function(d){
-                            if (d[1] < 70){
-
-                              return 'rgb(' + (118 + ((255-118) * d[1]/100)) +', 0, 0)';
-                            }else{
-                              return 'skyblue'; // 118, 208, 237
-                            }
-                          })
-  var legend = all_students.append('g')
-                           .classed('legend', true)
-                           .attr('transform', 'translate(' + (screen.width - (margins.right)) + ',' + margins.top + ')')
-
-  var color_text_pairs = [['red', 'Total Percentage < 70'], ['rgb(118, 208, 237)', 'Total Percentage >= 70']]
-  var legend_screen = {
-    width:screen.width - (screen.width - (margins.right)),
-    height:(screen.height * 0.5)- margins.top
-  }
-  var legend_margins = {
-    top:legend_screen.height*0.1,
-    bottom:legend_screen.height*0.1,
-    right:legend_screen.width*0.1,
-    left:legend_screen.width*0.1,
-  }
-  var legend_width = legend_screen.width - legend_margins.left - legend_margins.right;
-  var legend_height = legend_screen.height - legend_margins.top - legend_margins.bottom;
-  var rects = legend.selectAll('rect')
-                    .data(color_text_pairs)
-                    .enter()
-                    .append('rect')
-                    .attr('x', legend_margins.left)
-                    .attr('y', function(d, i){
-                      return (((legend_margins.bottom * 0.5) + (legend_height/color_text_pairs.length)) * (i)) + legend_margins.top;
-                    })
-                    .attr('width', legend_width * 0.35)
-                    .attr('height', legend_height/color_text_pairs.length)
-                    .attr('fill', function(d){
-                      return d[0];
-                    })
-                    .each(function(d, i){
-                      var rect = this.getBBox();
-                      var text = legend.append('text')
-                                       .attr('x', legend_margins.left + rect.width + legend_width * 0.05)
-                                       .attr('y', ((((legend_margins.bottom * 0.5) + (legend_height/color_text_pairs.length)) * (i)) + legend_margins.top) + rect.height/2)
-                                       .text(d[1])
-                    })
-
-  all_students.append('g')
-              .attr('transform', 'translate(' + 0 + ',' + ((height + margins.bottom) - 20) + ')')
-              .classed('XAxis', true)
-              .call(xAxis);
-  all_students.append('text')
-              .classed('XLabel', true)
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + width/2 + ',' + (height + margins.bottom) + ')')
-              .text('Students')
-  all_students.append('g')
-              .attr('transform', 'translate(' + (margins.left - (margins.left * 0.3)) +','+ 0 + ')')
-              .classed('yAxis', true)
-              .call(yAxis);
-  all_students.append('text')
-              .classed('YLabel', true)
-              .attr('text-anchor', 'middle')
-              .attr('transform', 'translate(' + (margins.left * 0.5) +','+ screen.height/2 + ') rotate(-90)')
-              .text('Total Percentage')
+var initialize = function(data){
+  // var student_buckets = [];
+  // data.forEach(function(d,i){
+  //   var day_buckets = [];
+  //   var max_days = d.final[0].day;
+  //   for (var day = 0; day < max_days; day++){
+  //     var arr_to_push = day_span_change(i, data, [day + 1, day + 2])
+  //     arr_to_push.push([day+1, day+2]);
+  //     day_buckets.push(arr_to_push)
+  //   }
+  //   student_buckets.push(day_buckets);
+  // })
+  // console.log(student_buckets)
+  // var cumulative_grades = {
+  //   final:undefined,
+  //   homework:undefined,
+  //   quiz:undefined,
+  //   test:undefined
+  // }
+  // var grades = {
+  //   // final:
+  //   // homework:
+  //   // quizzes:
+  //   // tests:
+  // };
+  var weight_change = day_span_change(0, data, [1, 2])
+  var total_percentage = object_summer(weight_change)
+  console.log("Total Percentage:", total_percentage);
 }
 
 
@@ -139,65 +46,116 @@ var initialize = function(dataset){
 
 
 
-
-
-
-
-
-
-
-
-
-
-var return_totals = function(data){ // Returns an array of the following format:
-                                    // [Picture, Total Percentage]
-  var totals = [];
-  var quizzes_col = [];
-  var finals_col = [];
-  var homework_col = [];
-  var tests_col = [];
-
-  data.forEach(function(d){ // Loops through all the data points in order to fill in
-                            // the totals array.
-    var finals = d.final.map(function(set){ return set.grade; });
-    var quizzes = d.quizes.map(function(set){ return set.grade; });
-    var homeworks = d.homework.map(function(set){ return set.grade; });
-    var tests = d.test.map(function(set){ return set.grade; });
-    var maxes = [
-      d.final[0].max * d.final.length,
-      d.quizes[0].max * d.quizes.length,
-      d.homework[0].max * d.homework.length,
-      d.test[0].max * d.test.length
-    ]
-    var total_weights = {
-      Finals:(((finals.reduce(function(total, current){
-        return total + current;
-      }))/maxes[0]) * 100) * 0.3,
-      Quizzes:(((quizzes.reduce(function(total, current){
-        return total + current;
-      }))/maxes[1]) * 100) * 0.15,
-      Homework:(((homeworks.reduce(function(total, current){
-        return total + current;
-      }))/maxes[2]) * 100) * 0.15,
-      Tests:(((tests.reduce(function(total, current){
-        return total + current;
-      }))/maxes[3]) * 100) * 0.4,
+var object_summer = function(obj, day, dataset){
+  var sum = 0;
+  for (var property in obj){
+    if (obj.hasOwnProperty(property)){
+      var value = obj[property] || 0;
+      sum += value;
     }
-    var total_percentage = 0;
-    for (var property in total_weights){
-      if (total_weights.hasOwnProperty(property)){
-        var val = total_weights[property];
-        total_percentage += val;
-      }
-    }
+  }
+  return sum;
+}
 
-    totals.push([d.picture, Math.round(total_percentage), total_weights])
+
+
+
+
+var return_weight = function(dataset, day){
+  var weight = {};
+  var return_relevant_info = function(d){
+    if (d.day == day){
+      return [d.day, d.grade];
+  }
+  }
+  var strip_undefined = function(datapoint){
+    return datapoint != undefined;
+  }
+  var final_grades = dataset.final.map(return_relevant_info).filter(strip_undefined)
+  var homework_grades = dataset.homework.map(return_relevant_info).filter(strip_undefined)
+  var quizzes_grades = dataset.quizes.map(return_relevant_info).filter(strip_undefined)
+  var tests_grades = dataset.test.map(return_relevant_info).filter(strip_undefined)
+  // console.log("Final:", final_grades);
+  // console.log("Homework:", homework_grades);
+  // console.log("Quizzes:", quizzes_grades);
+  // console.log("Tests:", tests_grades);
+  final_grades.push([0, 0]);
+  homework_grades.push([0, 0]);
+  quizzes_grades.push([0, 0]);
+  tests_grades.push([0, 0]);
+  var sum = function(total, current){
+    return (total + current);
+  }
+  var getGrades = function(list){
+    return list[1];
+  }
+
+
+
+  weight = {
+    final:(((final_grades.map(getGrades).reduce(sum)/(dataset.final[0].max * (final_grades.length - 1))) * 100) * 0.3),
+    homework:(((homework_grades.map(getGrades).reduce(sum)/(dataset.homework[0].max * (homework_grades.length - 1))) * 100) * 0.15),
+    quizes:(((quizzes_grades.map(getGrades).reduce(sum)/(dataset.quizes[0].max * (quizzes_grades.length - 1))) * 100) * 0.15),
+    test:(((tests_grades.map(getGrades).reduce(sum)/(dataset.test[0].max * (tests_grades.length - 1))) * 100) * 0.4)
+  }
+  return weight;
+}
+
+var return_days_sum = function(section, dataset, day){
+  var sum = 0;
+  var datasector = dataset[section];
+  datasector.forEach(function(d,i){
+    if (d.day <= day){
+      sum += d.grade;
+    }
   })
 
-  return totals;
+  return sum;
 }
 
-var return_weight = function(obtained_points, total_points, weight){
-  //((Obtained Points/Total Points) * 100) * Weight
-  return (((obtained_points/total_points) * 100) * weight)
+var amount_of_current_grades = function(dataset, day, property){
+  var relevantdata = dataset[property];
+  var grades_done = 1;
+  relevantdata.forEach(function(d,i){
+    console.log(d.day, day);
+    if (d.day >= day){
+      return;
+    }
+    grades_done++;
+  })
+  return grades_done;
+}
+
+var day_span_change = function(student, data, day_span, grades){ // Returns an array of the following format:
+                                    // [Total Percentage Change, Weight Change From Day_Span[0] to Day_Span[1]]
+    var dataset = data[student];
+    var weights = [];
+    var weights_for_categories = {
+      final:0.3,
+      homework:0.15,
+      quizes:0.15,
+      test:0.4
+    }
+    for (var day = day_span[0]; day <= day_span[1]; day++){
+      var weight = return_weight(dataset, day);
+      weights.push(weight);
+    }
+    var average = {
+    };
+    for (var property in weight){
+      if (weight.hasOwnProperty(property)){
+        var currentDaySum = return_days_sum(property, dataset, day_span[day_span.length - 1])
+        var currentDayAverage = (((currentDaySum/(amount_of_current_grades(dataset, day_span[day_span.length - 1], property) * dataset[property][0].max)) * 100) *  weights_for_categories[property]);
+        average[property] = currentDayAverage;
+    }
+    }
+    console.log("Average:", average);
+    var total_weight_change = {
+      final:(weights[weights.length-1].final - weights[0].final)||0,
+      homework:(weights[weights.length-1].homework - weights[0].homework)||0,
+      quizes:(weights[weights.length-1].quizes - weights[0].quizes)||0,
+      test:(weights[weights.length-1].test - weights[0].test)||0
+    }
+
+    return total_weight_change;
 }
