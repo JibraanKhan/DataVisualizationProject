@@ -443,6 +443,8 @@ var draw_new_svg = function(data, student){
                                        .attr('height', tooltip_size.height)
                                        .attr('fill', 'yellow')
                       var texts = [
+                        'Total Percent:'+d.total_percentage,
+                        'Total Percent Impacts:',
                         'Day '+d.span[0] + " – Day "+d.span[1],
                         'Quiz: '+d.average_changes.quizes,
                         'Homework: '+d.average_changes.homework,
@@ -651,5 +653,5 @@ var day_span_change = function(student, data, day_span, grades){ // Returns an a
       test:Math.round((averages[averages.length-1].test - averages[0].test)*quantifier)/quantifier
     }
     var total_percentage_change = Math.round((object_summer(average_changes)) * quantifier)/quantifier;
-    return {average_changes:average_changes, total_change:total_percentage_change, span:day_span, max_day:max_day}
+    return {average_changes:average_changes, total_change:total_percentage_change, span:day_span, max_day:max_day, total_percentage:Math.round(object_summer(averages[0])*quantifier)/quantifier}
 }
