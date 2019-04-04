@@ -264,7 +264,7 @@ var draw_new_svg = function(data, student, averages){
   var img_ref = "students/" + student_name+"-300px.png";
   console.log(img_ref);
   var universal_screen = {
-    width:800,
+    width:1000,
     height:600,
   }
   var svg = d3.select('body').append('svg')
@@ -298,14 +298,14 @@ var draw_new_svg = function(data, student, averages){
                           .attr('font-size', '35')
                           .text(student_name);
   var graph_size = {
-    width:universal_width,
+    width:universal_width*0.8,
     height:universal_height - universal_height*0.5
   }
   var graph_margins = {
     top:graph_size.height*0.05,
     bottom:graph_size.height*0.05,
     left:graph_size.width*0.05,
-    right:graph_size.width*0.05
+    right:graph_size.width*0.15
   }
   var graph_width = graph_size.width - graph_margins.left - graph_margins.right;
   var graph_height = graph_size.height - graph_margins.top - graph_margins.bottom;
@@ -352,7 +352,7 @@ var draw_new_svg = function(data, student, averages){
 
   var drawArea = d3.area()
                    .x(function(d, i){ return xScale(i+1); })
-                   .y0(function(d, i){ return yScale(0); })
+                   .y0(function(d, i){ return yScale(averages[i]); })
                    .y1(function(d, i){ return yScale(d.total_percentage); })
  // var curveTypes = [
  // 	{name: 'curveLinear', curve: d3.curveLinear, active: true, lineString: '', clear: false, info: 'Interpolates the points using linear segments.'},
@@ -386,17 +386,18 @@ var draw_new_svg = function(data, student, averages){
                         .x(function(d, i){ return xScale(i + 1); })
                         .y(function(d, i){ return yScale(d);})
                         .curve(d3.curveCatmullRom.alpha(0));
+                        // if (change < 0){
+                        //   return '#4286f4'
+                        // }else if(change > 0){
+                        //   return '#f2a61a'
+                        // }else if(change == 0){
+                        //   return '#918988'
+                        // };
    var area_graph = graph.append('path')
                          .datum(data)
                          .attr('d', drawArea)
                          .attr('fill', function(d, i){
-                           if (d.total_change > 0){
-                             return '#5dea75'
-                           }else if(d.total_change <0){
-                             return '#ea6b5d'
-                           }else{
-                             return '#918988'
-                           }
+                           return '#66d6af'
                          })
                          .classed('hidden', true);
   graph.append('g')
@@ -449,7 +450,7 @@ var draw_new_svg = function(data, student, averages){
                      var mouse = d3.mouse(this);
                      var tooltip = graph.append('g')
                                         .classed('tooltip', true)
-                                        .attr('transform', 'translate('+graph_width * 0.5+','+0+')');
+                                        .attr('transform', 'translate('+graph_width * 0.5+','+(-graph_margins.top - graph_margins.bottom)+')');
 
                      var rect = tooltip.append('rect')
                                        .attr('x', 0)
@@ -507,9 +508,9 @@ var draw_new_svg = function(data, student, averages){
                               .attr('transform', 'translate('+universal_margins.left+","+universal_height*0.4+")")
 
       var text_options = [
-        ['Line Graph', function(){ line_graph.classed('hidden',false);  area_graph.classed('hidden',true); }],
-        ['Area Graph', function(){ line_graph.classed('hidden',true);  area_graph.classed('hidden',false);}],
-        ['Line & Area Graph', function(){line_graph.classed('hidden', false);   area_graph.classed('hidden', false);}]
+        ['Line Graph', function(){ line_graph.classed('hidden',false);  area_graph.classed('hidden', true);  d3.selectAll('#changable').classed('hidden', true); }],
+        ['Area Graph', function(){ line_graph.classed('hidden',true);  area_graph.classed('hidden', false); d3.selectAll('#changable').classed('hidden', false);}],
+        ['Line & Area Graph', function(){line_graph.classed('hidden', false);   area_graph.classed('hidden', false); d3.selectAll('#changable').classed('hidden', false);}]
       ]
       options_panel.selectAll('text')
                    .data(text_options)
@@ -537,6 +538,60 @@ var draw_new_svg = function(data, student, averages){
                              .attr('font-size', 24)
                              .attr('fill', 'black')
                    })
+
+    var legend_size = {
+      width:universal_screen.width - universal_width,
+      height:graph_height * 0.5 - graph_margins.top
+    }
+    var legend_margins = {
+      left:legend_size.width*0.05,
+      top:legend_size.height*0.05,
+      bottom:legend_size.height*0.05,
+      right:legend_size.width*0.05
+    }
+    var legend_height = legend_size.height - legend_margins.top - legend_margins.bottom;
+    var padding = 5;
+    var legend_width = legend_size.width - legend_margins.left - legend_margins.right;
+    var legend = svg.append('g')
+                    .attr('transform', 'translate('+graph_size.width+','+(universal_margins.top + (universal_height * 0.5) +graph_margins.top)+')')
+                    .classed('Legend', true)
+    var text_colors = [
+      ['gray', 'Average Line'],
+      ['black', 'Student Line'],
+      ['#66d6af', 'Change From Class Average']
+    ]
+    legend.selectAll('rect')
+          .data(text_colors)
+          .enter()
+          .append('rect')
+          .attr('x', legend_margins.left)
+          .attr('y', function(d, i){
+            return (i * (legend_margins.bottom + (legend_height/text_colors.length))) + legend_margins.top
+          })
+          .attr('height', (legend_height/text_colors.length))
+          .attr('width', legend_width * 0.5)
+          .attr('fill', function(d,i){
+            return d[0];
+          })
+          .each(function(d, i){
+            var rect = d3.select(this);
+            var text = legend.append('text')
+                             .attr('x', legend_width * 0.6)
+                             .attr('y', ((i * (legend_margins.bottom + (legend_height/text_colors.length))) + legend_margins.top)+((legend_height/text_colors.length)/2))
+                             .text(d[1]);
+            if (d[1] == 'Change From Class Average'){
+                text.attr('id', 'changable')
+                text.classed('hidden', true)
+            }
+          })
+          .attr('id', function(d, i){
+            if (d[1] == 'Change From Class Average'){
+              return 'changable'
+            }})
+          .attr('class', function(d, i){
+            if (d[1] == 'Change From Class Average'){
+              return 'hidden'
+            }})
 }
 
 
