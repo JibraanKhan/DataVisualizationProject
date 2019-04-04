@@ -1,0 +1,19 @@
+g.student *{
+  pointer-events: none;
+}
+
+g.student{
+  pointer-events: bounding-box;
+}
+
+.tooltip{
+  pointer-events:none;
+}
+
+.hidden{
+  opacity:0;
+}
+
+path{
+  pointer-events:none;
+}
