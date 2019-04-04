@@ -19,6 +19,21 @@ var initialize = function(data){
     }
     student_buckets.push(day_bucket);
   });
+  var max_day_buckets = student_buckets[0].length;
+  console.log(max_day_buckets)
+  var max_students = student_buckets.length;
+  var day_averages = []
+  for (var currentBucket = 0; currentBucket < max_day_buckets; currentBucket++){
+    var todays_student_average = 0;
+    var total = 0;
+    console.log("Bucket:", currentBucket)
+    for (var currentStudent = 0; currentStudent < max_students; currentStudent++){
+      total+= student_buckets[currentStudent][currentBucket].total_percentage;
+    }
+    todays_student_average = total/max_students;
+    day_averages.push(todays_student_average);
+  }
+
   var screen = {
     width:1000,
     height:500
@@ -133,7 +148,7 @@ var initialize = function(data){
                                        })
                           .on('click', function(d,i){
                             d3.select('body').selectAll('svg.studentData').remove();
-                            draw_new_svg(d, i)
+                            draw_new_svg(d, i, day_averages);
                           })
     svg.append('g')
        .classed('xAxis', true)
@@ -218,7 +233,7 @@ var initialize = function(data){
 
 
 
-var draw_new_svg = function(data, student){
+var draw_new_svg = function(data, student, averages){
   var penguins = [
 	'bookworm-penguin',
 	'crafty-penguin',
@@ -306,8 +321,11 @@ var draw_new_svg = function(data, student){
                      .range([graph_margins.left, graph_width])
   var xAxis = d3.axisTop(xAxisScale)
                 .ticks(data.length);
+  // var yScale = d3.scaleLinear()
+  //                .domain([d3.min(data, function(d,i){ return d.total_change; }), d3.max(data, function(d,i){ return d.total_change; })])
+  //                .range([graph_height, graph_margins.top])
   var yScale = d3.scaleLinear()
-                 .domain([d3.min(data, function(d,i){ return d.total_change; }), d3.max(data, function(d,i){ return d.total_change; })])
+                 .domain([0, 100])
                  .range([graph_height, graph_margins.top])
   var yAxis = d3.axisRight(yScale)
                 .ticks(6)
@@ -335,7 +353,7 @@ var draw_new_svg = function(data, student){
   var drawArea = d3.area()
                    .x(function(d, i){ return xScale(i+1); })
                    .y0(function(d, i){ return yScale(0); })
-                   .y1(function(d, i){ return yScale(d.total_change); })
+                   .y1(function(d, i){ return yScale(d.total_percentage); })
  // var curveTypes = [
  // 	{name: 'curveLinear', curve: d3.curveLinear, active: true, lineString: '', clear: false, info: 'Interpolates the points using linear segments.'},
  // 	{name: 'curveBasis', curve: d3.curveBasis, active: true, lineString: '', clear: true, info: 'Interpolates the start and end points and approximates the inner points using a B-spline.'},
@@ -359,11 +377,15 @@ var draw_new_svg = function(data, student){
  // fav: d3.curveCatmullRom.alpha(0)
    var drawLine = d3.line()
                     .x(function(d, i){ return xScale(i+1); })
-                    .y(function(d, i){ return yScale(d.total_change); })
+                    .y(function(d, i){ return yScale(d.total_percentage); })
                     .curve(d3.curveCatmullRom.alpha(0));
                     // ['#ea6b5d', 'Decrease in Total Percentage'],
                     // ['#5dea75', 'Increase in Total Percentage'],
                     // ['#918988', 'No Change in Total Percentage']
+    var drawAverage = d3.line()
+                        .x(function(d, i){ return xScale(i + 1); })
+                        .y(function(d, i){ return yScale(d);})
+                        .curve(d3.curveCatmullRom.alpha(0));
    var area_graph = graph.append('path')
                          .datum(data)
                          .attr('d', drawArea)
@@ -377,13 +399,6 @@ var draw_new_svg = function(data, student){
                            }
                          })
                          .classed('hidden', true);
-  var zero_data = data.map(function(d,i){ return {total_change:0}})
-  var zero_line = graph.append('path')
-                       .datum(zero_data)
-                       .attr('d', drawLine)
-                       .attr('stroke-width', 3)
-                       .attr('stroke', 'green')
-                       .attr('fill', 'none');
   graph.append('g')
        .classed('xAxis', true)
        .attr('transform', 'translate(0,' + (graph_height + graph_margins.top) + ')')
@@ -396,7 +411,7 @@ var draw_new_svg = function(data, student){
 
    var labels = [
      ['Days', 'translate('+graph_width/2+","+(graph_height+graph_margins.top+graph_margins.bottom+5)+")"],
-     ['Total Percent Impacts', 'translate('+0+","+graph_height*(3/4)+") rotate(-90)"]
+     ['Total Percent Change', 'translate('+0+","+graph_height*(3/4)+") rotate(-90)"]
    ]
 
    graph.selectAll('text.labels')
@@ -411,7 +426,7 @@ var draw_new_svg = function(data, student){
                    .enter()
                    .append('circle')
                    .attr('cx', function(d, i){ return xScale(i+1)})
-                   .attr('cy', function(d, i){ return yScale(d.total_change); })
+                   .attr('cy', function(d, i){ return yScale(d.total_percentage); })
                    .attr('r', 5)
                    .attr('fill', 'blue')
                    .on('mouseover', function(d, i){
@@ -477,6 +492,12 @@ var draw_new_svg = function(data, student){
                            .attr('stroke-width', 5)
                            .attr('stroke', 'black')
                            .attr('fill', 'none')
+       var average_line = graph.append('path')
+                            .datum(averages)
+                            .attr('d', drawAverage)
+                            .attr('stroke-width', 5)
+                            .attr('stroke', 'gray')
+                            .attr('fill', 'none')
        var text_options_sizes = {
          width:universal_width,
          height:universal_height*0.45 - universal_height*0.35
@@ -612,13 +633,7 @@ var amount_of_current_grades = function(dataset, day, property){
   })
   return grades_done;
 }
-var average_grades = function(dataset, day){
-  var weights_for_categories = {
-    final:0.3,
-    homework:0.15,
-    quizes:0.15,
-    test:0.4
-  }
+var average_grades = function(weights_for_categories, dataset, day){
   var average = {
   };
   var weight = {
@@ -640,9 +655,15 @@ var day_span_change = function(student, data, day_span, grades){ // Returns an a
                                     // [Total Percentage Change, Weight Change From Day_Span[0] to Day_Span[1]]
     var dataset = data[student];
     var averages = [];
+    var weights_for_categories = {
+      final:0.3,
+      homework:0.15,
+      quizes:0.15,
+      test:0.4
+    }
     var max_day = data[student].final[data[student].final.length - 1].day;
     for (var day = day_span[0]; day <= day_span[1]; day++){
-      var average = average_grades(dataset, day);
+      var average = average_grades(weights_for_categories, dataset, day);
       averages.push(average);
     }
     var quantifier = 100;
@@ -652,6 +673,17 @@ var day_span_change = function(student, data, day_span, grades){ // Returns an a
       quizes:Math.round((averages[averages.length-1].quizes - averages[0].quizes)*quantifier)/quantifier,
       test:Math.round((averages[averages.length-1].test - averages[0].test)*quantifier)/quantifier
     }
+    var average_needed = averages[averages.length - 1];
+    var total_weight_missing = 0;
+    for (var prop in average_needed){
+      if (average_needed.hasOwnProperty(prop)){
+        var val = average_needed[prop];
+        if (val == 0){
+          total_weight_missing += weights_for_categories[prop];
+        }
+      }
+    }
+    var total_percentage = Math.round((((object_summer(average_needed)*quantifier)/quantifier)+(100 * total_weight_missing))*quantifier)/quantifier;
     var total_percentage_change = Math.round((object_summer(average_changes)) * quantifier)/quantifier;
-    return {average_changes:average_changes, total_change:total_percentage_change, span:day_span, max_day:max_day, total_percentage:Math.round(object_summer(averages[0])*quantifier)/quantifier}
+    return {average_changes:average_changes, total_change:total_percentage_change, span:day_span, max_day:max_day, total_percentage:total_percentage}
 }
