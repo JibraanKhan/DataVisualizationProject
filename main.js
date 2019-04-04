@@ -42,7 +42,7 @@ var initialize = function(data){
                  .domain([1, d3.max(d3.max(student_buckets, function(d, i){ return d.map(function(d,i){ return d.max_day; }); }))])
                  .range([margins.left, width])
   var xAxis = d3.axisTop(xAxisScale)
-                .ticks(d3.max(d3.max(student_buckets, function(d, i){ return d.map(function(d,i){ return d.max_day; }); })))
+                .ticks(d3.max(d3.max(student_buckets, function(d, i){ return d.map(function(d,i){ return d.max_day; }); }))/stretch)
   var yScale = d3.scaleLinear()
                  .domain([1, student_buckets.length])
                  .range([height, margins.top])
@@ -396,7 +396,7 @@ var draw_new_svg = function(data, student){
 
    var labels = [
      ['Days', 'translate('+graph_width/2+","+(graph_height+graph_margins.top+graph_margins.bottom+5)+")"],
-     ['Total Percent Change', 'translate('+0+","+graph_height*(3/4)+") rotate(-90)"]
+     ['Total Percent Impacts', 'translate('+0+","+graph_height*(3/4)+") rotate(-90)"]
    ]
 
    graph.selectAll('text.labels')
