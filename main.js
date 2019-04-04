@@ -79,9 +79,9 @@ var initialize = function(data){
                                  .attr('fill', function(d){
                                    var change = d.total_change;
                                    if (change < 0){
-                                     return '#ea6b5d'
+                                     return '#4286f4'
                                    }else if(change > 0){
-                                     return '#5dea75'
+                                     return '#f2a61a'
                                    }else if(change == 0){
                                      return '#918988'
                                    };
@@ -121,9 +121,9 @@ var initialize = function(data){
                                            current_rect.transition().attr('fill', function(d){
                                              var change = d.total_change;
                                              if (change < 0){
-                                               return '#ea6b5d'
+                                               return '#4286f4'
                                              }else if(change > 0){
-                                               return '#5dea75'
+                                               return '#f2a61a'
                                              }else if(change == 0){
                                                return '#918988'
                                              };
@@ -179,8 +179,8 @@ var initialize = function(data){
                .classed('legend', true)
                .attr('transform', 'translate(' + (width - (margins.right * 0.25)) + "," + margins.top + ")");
     var types = [
-      ['#ea6b5d', 'Decrease in Total Percentage'],
-      ['#5dea75', 'Increase in Total Percentage'],
+      ['#4286f4', 'Decrease in Total Percentage'],
+      ['#f2a61a', 'Increase in Total Percentage'],
       ['#918988', 'No Change in Total Percentage']
     ]
 
