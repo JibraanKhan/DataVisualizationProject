@@ -481,23 +481,38 @@ var draw_new_svg = function(data, student){
        }
        var options_panel = svg.append('g')
                               .classed('optionsPanel', true)
-                              .attr('transform', 'translate('+universal_margins.left+","+universal_height*0.35+")")
+                              .attr('transform', 'translate('+universal_margins.left+","+universal_height*0.4+")")
 
       var text_options = [
         ['Line Graph', function(){ line_graph.classed('hidden',false);  area_graph.classed('hidden',true); }],
-        ['Area Graph', function(){ line_graph.classed('hidden',true);  area_graph.classed('hidden',false);}]
+        ['Area Graph', function(){ line_graph.classed('hidden',true);  area_graph.classed('hidden',false);}],
+        ['Line & Area Graph', function(){line_graph.classed('hidden', false);   area_graph.classed('hidden', false);}]
       ]
       options_panel.selectAll('text')
                    .data(text_options)
                    .enter()
                    .append('text')
-                   .attr('x', function(d, i){ return ((i+1) * (text_options_sizes.width*(1/4)))})
+                   .attr('x', function(d, i){ return ((i) * (text_options_sizes.width*(1/3)))})
                    .attr('y', text_options_sizes.height * 0.5)
                    .text(function(d){
                      return d[0];
                    })
+                   .attr('text-anchor', 'middle')
+                   .attr('font-size', 24)
                    .on('click', function(d, i){
                      d[1]();
+                   })
+                   .on('mouseover', function(d, i){
+                     var text_obj = d3.select(this);
+                     text_obj.transition()
+                             .attr('font-size', 28)
+                             .attr('fill', 'blue')
+                   })
+                   .on('mouseout', function(d, i){
+                     var text_obj = d3.select(this);
+                     text_obj.transition()
+                             .attr('font-size', 24)
+                             .attr('fill', 'black')
                    })
 }
 
