@@ -407,12 +407,12 @@ var draw_new_svg = function(data, student, averages){
 
    graph.append('g')
         .classed('yAxis', true)
-        .attr('transform', 'translate('+ graph_margins.left*0.5 +',0)')
+        .attr('transform', 'translate('+ graph_margins.left*0.1 +',0)')
         .call(yAxis)
 
    var labels = [
      ['Days', 'translate('+graph_width/2+","+(graph_height+graph_margins.top+graph_margins.bottom+5)+")"],
-     ['Total Percent Change', 'translate('+0+","+graph_height*(3/4)+") rotate(-90)"]
+     ['Total Percent Change', 'translate('+(-graph_margins.left*0.5)+","+graph_height*(3/4)+") rotate(-90)"]
    ]
 
    graph.selectAll('text.labels')
@@ -459,9 +459,9 @@ var draw_new_svg = function(data, student, averages){
                                        .attr('height', tooltip_size.height)
                                        .attr('fill', 'yellow')
                       var texts = [
+                        'Day '+d.span[0] + " – Day "+d.span[1],
                         'Total Percent:'+d.total_percentage,
                         'Total Percent Impacts:',
-                        'Day '+d.span[0] + " – Day "+d.span[1],
                         'Quiz: '+d.average_changes.quizes,
                         'Homework: '+d.average_changes.homework,
                         'Test: '+d.average_changes.test,
@@ -707,6 +707,19 @@ var average_grades = function(weights_for_categories, dataset, day){
   }
   return average;
 }
+var return_all_difference_averages = function(array, prop){
+  var total = 0;
+  array.forEach(function(d, i){
+    var next_array = array[i + 1];
+    var current_array = array[i];
+    if (next_array && current_array){
+      var difference = next_array[prop] - current_array[prop];
+      total += (difference||0);
+    }
+  })
+  var average =  total/array.length;
+  return average;
+}
 var day_span_change = function(student, data, day_span, grades){ // Returns an array of the following format:
                                     // [Total Percentage Change, Weight Change From Day_Span[0] to Day_Span[1]]
     var dataset = data[student];
@@ -724,10 +737,10 @@ var day_span_change = function(student, data, day_span, grades){ // Returns an a
     }
     var quantifier = 100;
     var average_changes = {
-      final:Math.round((averages[averages.length-1].final - averages[0].final)*quantifier)/quantifier,
-      homework:Math.round((averages[averages.length-1].homework - averages[0].homework)*quantifier)/quantifier,
-      quizes:Math.round((averages[averages.length-1].quizes - averages[0].quizes)*quantifier)/quantifier,
-      test:Math.round((averages[averages.length-1].test - averages[0].test)*quantifier)/quantifier
+      final:Math.round((return_all_difference_averages(averages, 'final'))*quantifier)/quantifier,
+      homework:Math.round((return_all_difference_averages(averages, 'homework'))*quantifier)/quantifier,
+      quizes:Math.round((return_all_difference_averages(averages, 'quizes'))*quantifier)/quantifier,
+      test:Math.round((return_all_difference_averages(averages, 'test'))*quantifier)/quantifier
     }
     var average_needed = averages[averages.length - 1];
     var total_weight_missing = 0;
