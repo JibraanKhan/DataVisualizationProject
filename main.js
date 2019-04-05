@@ -487,17 +487,18 @@ var draw_new_svg = function(data, student, averages){
                                       //   d3.select(this).remove()
                                       // });
                    })
+       var line_thickness = 1;
        var line_graph = graph.append('path')
                            .datum(data)
                            .attr('d', drawLine)
-                           .attr('stroke-width', 5)
+                           .attr('stroke-width', line_thickness)
                            .attr('stroke', 'black')
                            .attr('fill', 'none')
        var average_line = graph.append('path')
                             .datum(averages)
                             .attr('d', drawAverage)
-                            .attr('stroke-width', 5)
-                            .attr('stroke', 'gray')
+                            .attr('stroke-width', line_thickness)
+                            .attr('stroke', '#ab5eff')
                             .attr('fill', 'none')
        var text_options_sizes = {
          width:universal_width,
@@ -556,7 +557,7 @@ var draw_new_svg = function(data, student, averages){
                     .attr('transform', 'translate('+graph_size.width+','+(universal_margins.top + (universal_height * 0.5) +graph_margins.top)+')')
                     .classed('Legend', true)
     var text_colors = [
-      ['gray', 'Average Line'],
+      ['#ab5eff', 'Average Line'],
       ['black', 'Student Line'],
       ['#66d6af', 'Change From Class Average']
     ]
