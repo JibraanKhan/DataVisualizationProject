@@ -365,7 +365,7 @@ var initialize = function(data){
               rects.exit()
 
 
-              rects.attr('class', 'BeingUsed').transition().duration(500).ease(easing[8])
+              rects.attr('class', 'FadeIn').transition().duration(500).ease(easing[8])
                   .attr('x', function(day_bucket, day_index){
                     return xScale(day_index+1)
                   })
@@ -395,13 +395,7 @@ var initialize = function(data){
                       transitioning = false;
                   })
 
-                  if (increase){
-                    group.selectAll('rect.changes').attr('class', 'Transparent');
-                    group.selectAll('rect.NewStretch').attr('class', 'Transparent');
-                  }else{
-                    group.selectAll('rect.changes').attr('class', 'Transparent');
-                    group.selectAll('rect.opaque_leaving').attr('class', 'Transparent');
-                  }
+                  group.selectAll('rect.changes, rect.NewStretch, rect.opaque_leaving').attr('class', 'FadeAway');
             })
          }
          object.attr('height', span_height/objects.length)

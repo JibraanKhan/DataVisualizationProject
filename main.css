@@ -37,3 +37,8 @@ path{
   opacity:0;
   transition: 500ms linear;
 }
+
+.FadeIn{
+  opacity:1;
+  transition: 1000ms linear;
+}
