@@ -7,9 +7,8 @@ function(error){
   console.log(error);
 })
 
-var initialize = function(data){
+var return_buckets_stretch = function(data, stretch){
   var student_buckets = [];
-  var stretch = 3;
   data.forEach(function(d, i){
     var day_bucket = [];
     var max_days = d.final[0].day;
@@ -19,14 +18,20 @@ var initialize = function(data){
     }
     student_buckets.push(day_bucket);
   });
+
+  return student_buckets
+}
+
+
+var initialize = function(data){
+  var stretch = 2;
+  var student_buckets = return_buckets_stretch(data, stretch)
   var max_day_buckets = student_buckets[0].length;
-  console.log(max_day_buckets)
   var max_students = student_buckets.length;
   var day_averages = []
   for (var currentBucket = 0; currentBucket < max_day_buckets; currentBucket++){
     var todays_student_average = 0;
     var total = 0;
-    console.log("Bucket:", currentBucket)
     for (var currentStudent = 0; currentStudent < max_students; currentStudent++){
       total+= student_buckets[currentStudent][currentBucket].total_percentage;
     }
@@ -42,7 +47,7 @@ var initialize = function(data){
     left: screen.width * 0.1,
     right: screen.width * 0.25,
     top: screen.height * 0.05,
-    bottom: screen.height * 0.1,
+    bottom: screen.height * 0.25,
   };
   var width = screen.width - margins.left - margins.right;
   var height = screen.height - margins.top - margins.bottom;
@@ -180,7 +185,7 @@ var initialize = function(data){
 
     var legend_size = {
       width:(margins.right - (margins.right*(3/4))),
-      height:(width*0.5 - width*0.3)
+      height:(height*0.5 - height*0.3)
     }
     var legend_margins = {
       top:legend_size.height*0.05,
@@ -223,10 +228,215 @@ var initialize = function(data){
                     return d[1];
                   })
      })
+     var span_tweeker_screen = {
+       width:screen.width - width,
+       height:(height + margins.bottom * 0.6) - (height * 0.5)
+     }
+     var span_margins = {
+       top:span_tweeker_screen.height*0.05,
+       bottom:span_tweeker_screen.height*0.05,
+       left:span_tweeker_screen.width*0.05,
+       right:span_tweeker_screen.width*0.05,
+     }
+     var span_height = span_tweeker_screen.height - span_margins.top - span_margins.bottom;
+     var span_width = span_tweeker_screen.width - span_margins.left - span_margins.right;
+     var span_tweeker = svg.append('g')
+                           .classed('span_tweeker', true)
+                           .attr('transform', 'translate(' + (width) + ','+ (height * 0.5) +')')
+     var hrefs = [
+       'images/UpArrow.png',
+       'images/DownArrow.png'
+     ]
+     var objects = [
+       ['image', ['x', span_margins.left], ['xlink:href', hrefs[0]], ['width', span_width]],
+       ['text', ['x', (span_margins.left + span_width * 0.5)], ['font-size', 24], ['text-anchor', 'middle'], 'Day Span:'],
+       ['text', ['x', (span_margins.left + span_width * 0.5)], ['font-size', 35], ['text-anchor', 'middle'], ['class', 'Stretch'],stretch],
+       ['image', ['x', span_margins.left], ['xlink:href', hrefs[1]], ['width', span_width]],
+     ]
+
+     objects.forEach(function(obj_array, obj_index){
+       var object = span_tweeker.append(obj_array[0]);
+       var bBox = object.node().getBBox();
+       obj_array.forEach(function(data_info, data_index){
+         if (data_index > 0){
+           object.attr(data_info[0], data_info[1]);
+         }
+       })
+       var new_height = object.attr('height') || 0;
+       if (obj_array[0] == 'image'){
+         new_height = span_height/objects.length
+         var click_func = function(){
+           var increase = false;
+           var x = 0;
+           var new_x = 0;
+           if (obj_index == 0){
+             x = span_tweeker_screen.width;
+             new_x = 0;
+             if (stretch < 12){
+               stretch++;
+               increase = true;
+             }
+           }else if(obj_index == 3){
+             x = 0;
+             new_x = span_tweeker_screen.width;
+             if (stretch > 2){
+             stretch--;
+           }
+           }
+           var current_text = d3.select(this.parentNode).selectAll('text.Stretch')
+           current_text.transition()
+                       .duration(200)
+                       .attr('x', x)
+                       .on('start', function(){
+                         current_text.classed('Stretch', false);
+                         current_text.classed('opaque_leaving', true);
+                       })
+                       .on('end', function(){
+                         current_text.remove();
+                       })
+            var new_new_height = bBox.height;
+            var new_text = span_tweeker.append('text')
+                                       .attr('x', new_x)
+                                       .attr('y', (2 * ((span_height/objects.length) + new_new_height) + span_margins.top + span_height * 0.175))
+                                       .text(stretch)
+                                       .attr('text-anchor', 'middle')
+                                       .attr('font-size', 35)
+
+            new_text.transition()
+                    .duration(200)
+                    .attr('x', (span_margins.left + span_width * 0.5))
+                    .on('start', function(){
+                      new_text.classed('NewStretch', true)
+                    })
+                    .on('end', function(){
+                      new_text.classed('NewStretch', false)
+                      new_text.classed('Stretch', true);
+                    })
+            student_buckets = return_buckets_stretch(data, stretch)
+            max_day_buckets = student_buckets[0].length;
+            max_students = student_buckets.length;
+            day_averages = []
+            for (var currentBucket = 0; currentBucket < max_day_buckets; currentBucket++){
+              var todays_student_average = 0;
+              var total = 0;
+              for (var currentStudent = 0; currentStudent < max_students; currentStudent++){
+                total+= student_buckets[currentStudent][currentBucket].total_percentage;
+              }
+              todays_student_average = total/max_students;
+              day_averages.push(todays_student_average);
+            }
+            xScale = d3.scaleLinear()
+                           .domain([1, d3.max(student_buckets, function(d, i){ return d.length; })])
+                           .range([margins.left, width])
+            xAxisScale = d3.scaleLinear()
+                           .domain([1, d3.max(d3.max(student_buckets, function(d, i){ return d.map(function(d,i){ return d.max_day; }); }))])
+                           .range([margins.left, width])
+            xAxis = d3.axisTop(xAxisScale)
+                          .ticks(d3.max(d3.max(student_buckets, function(d, i){ return d.map(function(d,i){ return d.max_day; }); }))/stretch)
+            yScale = d3.scaleLinear()
+                           .domain([1, student_buckets.length])
+                           .range([height, margins.top])
+            yAxis = d3.axisRight(yScale)
+                          .ticks(student_buckets.length);
+
+            var groups = svg.selectAll('g.student')
+                            .data(student_buckets);
+
+            groups.exit()
+
+            groups.each(function(student_bucket, bucket_index){
+              var group = d3.select(this);
+              var rects = group.selectAll('rect').attr('class', 'changes')
+                               .data(student_bucket)
+              rects.exit()
+
+
+              rects.attr('class', 'BeingUsed').transition()
+                  .attr('x', function(day_bucket, day_index){
+                    return xScale(day_index+1)
+                  })
+                  .attr('y', yScale(bucket_index+1))
+                  .attr('height', (yScale(bucket_index+1) - yScale(bucket_index+2)) - height*0.005)
+                  .attr('width', function(day_bucket, day_index){
+                    var end_point = xScale(day_index+2);
+                    var initial_point = xScale(day_index+1);
+                    if (end_point > xScale(d3.max(student_buckets, function(d, i){ return d.length; }))){
+                      end_point = xScale(d3.max(student_buckets, function(d, i){ return d.length; }))
+                    }
+                    if (initial_point > xScale(d3.max(student_buckets, function(d, i){ return d.length; }))){
+                      initial_point = xScale(d3.max(student_buckets, function(d, i){ return d.length; }))
+                    }
+                    return (end_point - initial_point) - width*0.001
+                  })
+                  .attr('fill', function(d){
+                    var change = d.total_change;
+                    if (change < 0){
+                      return '#4286f4'
+                    }else if(change > 0){
+                      return '#f2a61a'
+                    }else if(change == 0){
+                      return '#918988'
+                    };
+                  })
+                  if (increase){
+                    group.selectAll('rect.changes').attr('class', 'Transparent');
+                    group.selectAll('rect.NewStretch').attr('class', 'Transparent');
+                  }else{
+                    group.selectAll('rect.changes').attr('class', 'Transparent');
+                    group.selectAll('rect.opaque_leaving').attr('class', 'Transparent');
+                  }
+            })
+         }
+         object.attr('height', span_height/objects.length)
+               .attr('y', (obj_index * (span_height/objects.length) + span_margins.top))
+               .on('mouseover', function(){
+                 var offset = 30;
+                 var y = 0;
+                 if (obj_index == 0){
+                   y = ((obj_index * (span_height/objects.length) + span_margins.top) - offset)
+                 }else{
+                   y = (obj_index * (span_height/objects.length) + span_margins.top)
+                 }
+                 object.transition()
+                       .attr('x', 0)
+                       .attr('y', y)
+                       .attr('width', span_tweeker_screen.width)
+                       .attr('height', (span_height/objects.length) + offset)
+               })
+               .on('mouseout', function(){
+                 object.transition()
+                       .attr('x', span_margins.left)
+                       .attr('y', ((obj_index * (span_height/objects.length) + span_margins.top)))
+                       .attr('width', span_width)
+                       .attr('height', span_height/objects.length);
+               })
+               .on('click', throttleDebounce(click_func, 400))
+
+       }else if(obj_array[0] == 'text'){
+         new_height = bBox.height;
+         object.text(obj_array[obj_array.length - 1]);
+         object.attr('y', (obj_index * ((span_height/objects.length) + new_height) + span_margins.top + span_height * 0.175))
+       }
+     })
+       // span_tweeker.append('image')
+       //             .attr('x', span_margins.left)
+       //             .attr('y', 0)
+       //             .attr('xlink:href', hrefs[0])
+       //             .attr('width', span_width)
+       //             .attr('height', )
 }
 
 
-
+var throttleDebounce = function(func, time){
+  var free = true;
+  return function(){
+    if (free){
+      free = false;
+      func.apply(this, arguments);
+      setTimeout(function(){ free = true; }, time)
+    }
+  }
+}
 
 
 
@@ -262,7 +472,6 @@ var draw_new_svg = function(data, student, averages){
 ]
   var student_name = penguins[student];
   var img_ref = "students/" + student_name+"-300px.png";
-  console.log(img_ref);
   var universal_screen = {
     width:1000,
     height:600,
@@ -312,7 +521,6 @@ var draw_new_svg = function(data, student, averages){
   var graph = svg.append('g')
                  .classed('graph', true)
                  .attr('transform', 'translate(' + universal_margins.left + ',' + (universal_margins.top + (universal_height * 0.5)) + ')')
-  console.log(d3.max(data, function(d, i){ return d.max_day; }))
   var xScale = d3.scaleLinear()
                  .domain([1, data.length])
                  .range([graph_margins.left, graph_width])
@@ -640,10 +848,6 @@ var return_weight = function(dataset, day){
   var homework_grades = dataset.homework.map(return_relevant_info).filter(strip_undefined)
   var quizzes_grades = dataset.quizes.map(return_relevant_info).filter(strip_undefined)
   var tests_grades = dataset.test.map(return_relevant_info).filter(strip_undefined)
-  // console.log("Final:", final_grades);
-  // console.log("Homework:", homework_grades);
-  // console.log("Quizzes:", quizzes_grades);
-  // console.log("Tests:", tests_grades);
   final_grades.push([0, 0]);
   homework_grades.push([0, 0]);
   quizzes_grades.push([0, 0]);

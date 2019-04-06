@@ -17,3 +17,18 @@ g.student{
 path{
   pointer-events:none;
 }
+
+.opaque_leaving{
+  opacity:0;
+  transition: 150ms linear;
+}
+
+.NewStretch{
+  opacity:1;
+  transition: 150ms linear;
+}
+
+.Transparent{
+  opacity:0;
+  transition: 100ms linear;
+}
