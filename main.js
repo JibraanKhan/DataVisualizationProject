@@ -559,6 +559,7 @@ var draw_new_svg = function(data, student, averages){
  //                .classed('hidden', true);
 
   var drawArea = d3.area()
+                   .curve(d3.curveCatmullRom.alpha(0))
                    .x(function(d, i){ return xScale(i+1); })
                    .y0(function(d, i){ return yScale(averages[i]); })
                    .y1(function(d, i){ return yScale(d.total_percentage); })
