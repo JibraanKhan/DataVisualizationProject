@@ -22,6 +22,28 @@ var return_buckets_stretch = function(data, stretch){
   return student_buckets
 }
 
+var return_selection_back = function(g, d, i, easing, colors){
+  var change = d.total_change;
+  var x_change = 0;
+  var rects = g.selectAll('rect')
+               .each(function(d,i){
+                 var current_rect = d3.select(this);
+                 // var change = d.total_change;
+                 current_rect.transition().duration(500).ease(easing[9]).attr('fill', function(d){
+                   var change = d.total_change;
+                   if (change < 0){
+                     return colors[0]
+                   }else if(change > 0){
+                     return colors[1]
+                   }else if(change == 0){
+                     return colors[2]
+                   };
+                 })
+               })
+
+     g.transition().duration(500).ease(easing[1]).attr('transform', 'translate(' + x_change + ',0)')
+      .on('end', function(){g.attr('class', 'student'); })
+}
 
 var initialize = function(data){
   var stretch = 2;
@@ -126,44 +148,35 @@ var initialize = function(data){
                                  })
                           })
                           .on('mouseover', function(d, i){
-                            if (transitioning){ return false; }
-                            var change = d.total_change;
                             var g = d3.select(this);
+                            if (transitioning || g.attr('class') == 'selected'){ return false; }
+                            var change = d.total_change;
                             var x_change = 10;
                             var rects = g.selectAll('rect')
                                          .each(function(d,i){
                                            var current_rect = d3.select(this);
                                            var change = d.total_change;
                                            var color = d3.rgb(current_rect.attr('fill'));
-                                           var brightness = 40;
+                                           var brightness = 70;
                                            color = 'rgb('+(color.r+brightness)+','+(color.g+brightness)+','+(color.b+brightness)+')'
                                            current_rect.transition().duration(500).ease(easing[9]).attr('fill', color);
                                          })
                             g.transition().ease(easing[0]).duration(1000).attr('transform', 'translate(' + x_change + ',0)')
                           })
                           .on('mouseout', function(d, i){
-                            if (transitioning){ return false; }
-                            var change = d.total_change;
                             var g = d3.select(this);
-                            var x_change = 0;
-                            var rects = g.selectAll('rect')
-                                         .each(function(d,i){
-                                           var current_rect = d3.select(this);
-                                           // var change = d.total_change;
-                                           current_rect.transition().duration(500).ease(easing[9]).attr('fill', function(d){
-                                             var change = d.total_change;
-                                             if (change < 0){
-                                               return colors[0]
-                                             }else if(change > 0){
-                                               return colors[1]
-                                             }else if(change == 0){
-                                               return colors[2]
-                                             };
-                                           })
-                                         })
-                            g.transition().duration(500).ease(easing[1]).attr('transform', 'translate(' + x_change + ',0)')
-                                       })
+                            if (transitioning || g.attr('class') == 'selected'){ return false; }
+                            return_selection_back(g, d, i, easing, colors);
+                          })
                           .on('click', function(d,i){
+                            var g = d3.select(this);
+                            if (g.attr('class') != 'selected'){
+                              var gs = svg.selectAll('g.selected').attr('class', 'student')
+                              return_selection_back(gs, d, i, easing, colors)
+                              g.attr('class', 'selected')
+                            }else{
+                              return_selection_back(g, d, i, easing, colors);
+                            }
                             d3.select('body').selectAll('svg.studentData').remove();
                             draw_new_svg(d, i, day_averages);
                           })
@@ -353,12 +366,13 @@ var initialize = function(data){
             yAxis = d3.axisRight(yScale)
                           .ticks(student_buckets.length);
 
-            var groups = svg.selectAll('g.student')
+            var groups = svg.selectAll('g.student, g.selected')
                             .data(student_buckets);
 
             groups.exit()
 
-            groups.each(function(student_bucket, bucket_index){
+            groups.transition().duration(1000).ease(easing[1]).attr('class', 'student').attr('transform', 'translate(' + 0 + ',0)').each(function(student_bucket, bucket_index){
+              console.log("Bucket:", student_bucket);
               var group = d3.select(this);
               var rects = group.selectAll('rect').attr('class', 'changes')
                                .data(student_bucket)
@@ -636,7 +650,6 @@ var draw_new_svg = function(data, student, averages){
         .classed('labels', true)
         .attr('transform', function(d,i){ return d[1]; })
         .text(function(d, i){ return d[0]; })
-   console.log("Easing:", easing)
    var dots = graph.selectAll('circle')
                    .data(data)
                    .enter()
