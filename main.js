@@ -49,6 +49,19 @@ var initialize = function(data){
     top: screen.height * 0.05,
     bottom: screen.height * 0.25,
   };
+  var transitioning = false;
+  var easing = [
+    d3.easeElastic,
+    d3.easeBounce,
+    d3.easeLinear,
+    d3.easeSin,
+    d3.easeQuad,
+    d3.easeCubic,
+    d3.easePoly,
+    d3.easeCircle,
+    d3.easeExp,
+    d3.easeBack
+    ];
   var colors = [
     '#009794', // Decrease in Percentage
     '#C845FF', // Increase in Percentage
@@ -113,6 +126,7 @@ var initialize = function(data){
                                  })
                           })
                           .on('mouseover', function(d, i){
+                            if (transitioning){ return false; }
                             var change = d.total_change;
                             var g = d3.select(this);
                             var x_change = 10;
@@ -121,21 +135,14 @@ var initialize = function(data){
                                            var current_rect = d3.select(this);
                                            var change = d.total_change;
                                            var color = d3.rgb(current_rect.attr('fill'));
-                                           var added_color = 40;
-                                           if (change < 0){
-                                             color.r += added_color
-                                           }else if(change > 0){
-                                             color.g += added_color
-                                           }else{
-                                             color.g += added_color
-                                             color.r += added_color
-                                             color.b += added_color
-                                           }
-                                           current_rect.transition().attr('fill', color);
+                                           var brightness = 40;
+                                           color = 'rgb('+(color.r+brightness)+','+(color.g+brightness)+','+(color.b+brightness)+')'
+                                           current_rect.transition().duration(500).ease(easing[9]).attr('fill', color);
                                          })
-                            g.transition().attr('transform', 'translate(' + x_change + ',0)')
+                            g.transition().ease(easing[0]).duration(1000).attr('transform', 'translate(' + x_change + ',0)')
                           })
                           .on('mouseout', function(d, i){
+                            if (transitioning){ return false; }
                             var change = d.total_change;
                             var g = d3.select(this);
                             var x_change = 0;
@@ -143,7 +150,7 @@ var initialize = function(data){
                                          .each(function(d,i){
                                            var current_rect = d3.select(this);
                                            // var change = d.total_change;
-                                           current_rect.transition().attr('fill', function(d){
+                                           current_rect.transition().duration(500).ease(easing[9]).attr('fill', function(d){
                                              var change = d.total_change;
                                              if (change < 0){
                                                return colors[0]
@@ -154,7 +161,7 @@ var initialize = function(data){
                                              };
                                            })
                                          })
-                            g.transition().attr('transform', 'translate(' + x_change + ',0)')
+                            g.transition().duration(500).ease(easing[1]).attr('transform', 'translate(' + x_change + ',0)')
                                        })
                           .on('click', function(d,i){
                             d3.select('body').selectAll('svg.studentData').remove();
@@ -273,6 +280,7 @@ var initialize = function(data){
        if (obj_array[0] == 'image'){
          new_height = span_height/objects.length
          var click_func = function(){
+           transitioning = true;
            var increase = false;
            var x = 0;
            var new_x = 0;
@@ -292,11 +300,11 @@ var initialize = function(data){
            }
            var current_text = d3.select(this.parentNode).selectAll('text.Stretch')
            current_text.transition()
-                       .duration(200)
+                       .duration(1000)
+                       .ease(easing[3])
                        .attr('x', x)
                        .on('start', function(){
-                         current_text.classed('Stretch', false);
-                         current_text.classed('opaque_leaving', true);
+                         current_text.attr('class', 'opaque_leaving');
                        })
                        .on('end', function(){
                          current_text.remove();
@@ -308,16 +316,15 @@ var initialize = function(data){
                                        .text(stretch)
                                        .attr('text-anchor', 'middle')
                                        .attr('font-size', 35)
-
             new_text.transition()
-                    .duration(200)
+                    .duration(250)
+                    .ease(easing[4])
                     .attr('x', (span_margins.left + span_width * 0.5))
                     .on('start', function(){
-                      new_text.classed('NewStretch', true)
+                      new_text.attr('class', 'NewStretch')
                     })
                     .on('end', function(){
-                      new_text.classed('NewStretch', false)
-                      new_text.classed('Stretch', true);
+                      new_text.attr('class', 'Stretch');
                     })
             student_buckets = return_buckets_stretch(data, stretch)
             max_day_buckets = student_buckets[0].length;
@@ -358,7 +365,7 @@ var initialize = function(data){
               rects.exit()
 
 
-              rects.attr('class', 'BeingUsed').transition()
+              rects.attr('class', 'BeingUsed').transition().duration(500).ease(easing[8])
                   .attr('x', function(day_bucket, day_index){
                     return xScale(day_index+1)
                   })
@@ -384,7 +391,10 @@ var initialize = function(data){
                     }else if(change == 0){
                       return colors[2]
                     };
+                  }).on('end', function(){
+                      transitioning = false;
                   })
+
                   if (increase){
                     group.selectAll('rect.changes').attr('class', 'Transparent');
                     group.selectAll('rect.NewStretch').attr('class', 'Transparent');
@@ -404,14 +414,14 @@ var initialize = function(data){
                  }else{
                    y = (obj_index * (span_height/objects.length) + span_margins.top)
                  }
-                 object.transition()
+                 object.transition().duration(100)
                        .attr('x', 0)
                        .attr('y', y)
                        .attr('width', span_tweeker_screen.width)
                        .attr('height', (span_height/objects.length) + offset)
                })
                .on('mouseout', function(){
-                 object.transition()
+                 object.transition().duration(300)
                        .attr('x', span_margins.left)
                        .attr('y', ((obj_index * (span_height/objects.length) + span_margins.top)))
                        .attr('width', span_width)
@@ -524,8 +534,19 @@ var draw_new_svg = function(data, student, averages){
     '#6DB6FF', // Dots color
     '#000000', // Tooltip color
     '#FFFFFF', // Tooltip text color
-
   ]
+  var easing = [
+    d3.easeElastic,
+    d3.easeBounce,
+    d3.easeLinear,
+    d3.easeSin,
+    d3.easeQuad,
+    d3.easeCubic,
+    d3.easePoly,
+    d3.easeCircle,
+    d3.easeExp,
+    d3.easeBack
+    ];
   var graph_margins = {
     top:graph_size.height*0.05,
     bottom:graph_size.height*0.05,
@@ -621,6 +642,7 @@ var draw_new_svg = function(data, student, averages){
         .classed('labels', true)
         .attr('transform', function(d,i){ return d[1]; })
         .text(function(d, i){ return d[0]; })
+   console.log("Easing:", easing)
    var dots = graph.selectAll('circle')
                    .data(data)
                    .enter()
@@ -643,15 +665,16 @@ var draw_new_svg = function(data, student, averages){
                      }
                      var tooltip_width = tooltip_size.width - tooltip_margins.left - tooltip_margins.right;
                      var tooltip_height = tooltip_size.height - tooltip_margins.top - tooltip_margins.bottom;
-                     circle.transition().attr('r', 10);
+                     circle.transition().duration(100).ease(easing[7]).attr('r', 10);
                      var cx = circle.attr('cx');
                      var cy = circle.attr('cy');
                      var mouse = d3.mouse(this);
                      var tooltip = graph.append('g')
-                                        .classed('tooltip', true)
-                                        .attr('transform', 'translate('+graph_width * 0.5+','+(-graph_margins.top - graph_margins.bottom)+')');
+                                        .classed('tooltip', true) // Before: (0 - (universal_height * 0.6))   After: (-universal_height * 0.1)
+                                        .attr('transform', 'translate('+graph_width * 0.5+','+(-universal_height)+')');
 
                      var rect = tooltip.append('rect')
+                                       .attr('class', 'hidden')
                                        .attr('x', 0)
                                        .attr('y', 0)
                                        .attr('width', tooltip_size.width)
@@ -670,22 +693,37 @@ var draw_new_svg = function(data, student, averages){
                              .data(texts)
                              .enter()
                              .append('text')
+                             .attr('class', 'hidden')
                              .attr('x', tooltip_margins.left)
                              .attr('y', function(d, i){
                                return (i + 1) * (tooltip_height/texts.length);
                              })
                              .text(function(d, i){ return d; })
                              .attr('stroke', colors[5])
+
+                      tooltip.transition()
+                             .duration(1000)
+                             .ease(easing[1])
+                             .attr('transform', 'translate('+graph_width * 0.5+','+(-universal_height * 0.1)+')')
+                             .on('start', function(){
+                               tooltip.selectAll('text, rect')
+                                      .attr('class', 'NewStretch');
+                             })
                    })
                    .on('mouseout', function(d, i){
                      var circle = d3.select(this);
-                     circle.transition().attr('r', 5);
-                     d3.select('body').selectAll('.tooltip')
-                                      .transition()
-                                      .attr('opacity', 0)
-                                      // .on('end', function(d,i){
-                                      //   d3.select(this).remove()
-                                      // });
+                     circle.transition().duration(100).ease(easing[6]).attr('r', 5);
+                     var tooltip = graph.selectAll('g.hidden, g.tooltip')
+                                        .transition()
+                                        .duration(1000)
+                                        .ease(easing[2])
+                                        .attr('transform', 'translate('+graph_width * 0.5+','+(-universal_height)+')')
+                                        .on('start', function(){
+                                          tooltip.selectAll('text, rect')
+                                                 .attr('class', 'FadeAway');
+                                        })
+
+
                    })
        var line_thickness = 2;
        var line_graph = graph.append('path')
@@ -730,12 +768,16 @@ var draw_new_svg = function(data, student, averages){
                    .on('mouseover', function(d, i){
                      var text_obj = d3.select(this);
                      text_obj.transition()
+                             .duration(250)
+                             .ease(easing[2])
                              .attr('font-size', 28)
                              .attr('fill', 'blue')
                    })
                    .on('mouseout', function(d, i){
                      var text_obj = d3.select(this);
                      text_obj.transition()
+                             .duration(150)
+                             .ease(easing[2])
                              .attr('font-size', 24)
                              .attr('fill', 'black')
                    })

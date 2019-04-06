@@ -20,15 +20,20 @@ path{
 
 .opaque_leaving{
   opacity:0;
-  transition: 150ms linear;
+  transition: 500ms linear;
 }
 
 .NewStretch{
   opacity:1;
-  transition: 150ms linear;
+  transition: 500ms linear;
 }
 
 .Transparent{
   opacity:0;
-  transition: 100ms linear;
+  transition: 150ms linear;
+}
+
+.FadeAway{
+  opacity:0;
+  transition: 500ms linear;
 }
