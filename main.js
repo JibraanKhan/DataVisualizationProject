@@ -159,7 +159,7 @@ var initialize = function(data){
                                            var color = d3.rgb(current_rect.attr('fill'));
                                            var brightness = 70;
                                            color = 'rgb('+(color.r+brightness)+','+(color.g+brightness)+','+(color.b+brightness)+')'
-                                           current_rect.transition().duration(500).ease(easing[9]).attr('fill', color);
+                                           current_rect.transition().duration(250).ease(easing[9]).attr('fill', color);
                                          })
                             g.transition().ease(easing[0]).duration(1000).attr('transform', 'translate(' + x_change + ',0)')
                           })
