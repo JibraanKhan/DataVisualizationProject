@@ -260,6 +260,8 @@ var initialize = function(data){
      ]
 
      objects.forEach(function(obj_array, obj_index){
+       var day_span_min = 2;
+       var day_span_max = 15;
        var object = span_tweeker.append(obj_array[0]);
        var bBox = object.node().getBBox();
        obj_array.forEach(function(data_info, data_index){
@@ -277,14 +279,14 @@ var initialize = function(data){
            if (obj_index == 0){
              x = span_tweeker_screen.width;
              new_x = 0;
-             if (stretch < 12){
+             if (stretch < day_span_max){
                stretch++;
                increase = true;
              }
            }else if(obj_index == 3){
              x = 0;
              new_x = span_tweeker_screen.width;
-             if (stretch > 2){
+             if (stretch > day_span_min){
              stretch--;
            }
            }
@@ -925,6 +927,9 @@ var day_span_change = function(student, data, day_span, grades){ // Returns an a
       test:0.4
     }
     var max_day = data[student].final[data[student].final.length - 1].day;
+    if (day_span[day_span.length - 1] > max_day){
+      day_span[day_span.length - 1] = max_day;
+    }
     for (var day = day_span[0]; day <= day_span[1]; day++){
       var average = average_grades(weights_for_categories, dataset, day);
       averages.push(average);
