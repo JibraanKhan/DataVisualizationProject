@@ -49,6 +49,11 @@ var initialize = function(data){
     top: screen.height * 0.05,
     bottom: screen.height * 0.25,
   };
+  var colors = [
+    '#009794', // Decrease in Percentage
+    '#C845FF', // Increase in Percentage
+    '#E86100' // No difference in Percentage
+  ]
   var width = screen.width - margins.left - margins.right;
   var height = screen.height - margins.top - margins.bottom;
   var svg = d3.select('body')
@@ -99,11 +104,11 @@ var initialize = function(data){
                                  .attr('fill', function(d){
                                    var change = d.total_change;
                                    if (change < 0){
-                                     return '#4286f4'
+                                     return colors[0]
                                    }else if(change > 0){
-                                     return '#f2a61a'
+                                     return colors[1]
                                    }else if(change == 0){
-                                     return '#918988'
+                                     return colors[2]
                                    };
                                  })
                           })
@@ -141,11 +146,11 @@ var initialize = function(data){
                                            current_rect.transition().attr('fill', function(d){
                                              var change = d.total_change;
                                              if (change < 0){
-                                               return '#4286f4'
+                                               return colors[0]
                                              }else if(change > 0){
-                                               return '#f2a61a'
+                                               return colors[1]
                                              }else if(change == 0){
-                                               return '#918988'
+                                               return colors[2]
                                              };
                                            })
                                          })
@@ -199,9 +204,9 @@ var initialize = function(data){
                .classed('legend', true)
                .attr('transform', 'translate(' + (width - (margins.right * 0.25)) + "," + margins.top + ")");
     var types = [
-      ['#4286f4', 'Decrease in Total Percentage'],
-      ['#f2a61a', 'Increase in Total Percentage'],
-      ['#918988', 'No Change in Total Percentage']
+      [colors[0], 'Decrease in Total Percentage'],
+      [colors[1], 'Increase in Total Percentage'],
+      [colors[2], 'No Change in Total Percentage']
     ]
 
     g.selectAll('g')
@@ -371,11 +376,11 @@ var initialize = function(data){
                   .attr('fill', function(d){
                     var change = d.total_change;
                     if (change < 0){
-                      return '#4286f4'
+                      return colors[0]
                     }else if(change > 0){
-                      return '#f2a61a'
+                      return colors[1]
                     }else if(change == 0){
-                      return '#918988'
+                      return colors[2]
                     };
                   })
                   if (increase){
@@ -510,6 +515,15 @@ var draw_new_svg = function(data, student, averages){
     width:universal_width*0.8,
     height:universal_height - universal_height*0.5
   }
+  var colors = [
+    '#004949', // Student
+    '#24FF24', // Average
+    '#006DDB', // Area Between Student & Average
+    '#6DB6FF', // Dots color
+    '#000000', // Tooltip color
+    '#FFFFFF', // Tooltip text color
+
+  ]
   var graph_margins = {
     top:graph_size.height*0.05,
     bottom:graph_size.height*0.05,
@@ -537,26 +551,6 @@ var draw_new_svg = function(data, student, averages){
                  .range([graph_height, graph_margins.top])
   var yAxis = d3.axisRight(yScale)
                 .ticks(6)
- // var line_graph = svg.append('g')
- //                .append('path')
- //                .datum(dataset)
- //                .attr('d', drawLine)
- //                .attr('stroke-width', 5)
- //                .attr('stroke', 'black')
- //                .attr('fill', 'none')
- //                .attr('transform', 'translate(' + margins.left + ',0)')
- // var drawArea = d3.area()
- //                  .x(function(d, i){ return xScale(i); })
- //                  .y0(height)
- //                  .y1(function(d){ return yScale(d); })
- //
- // var area_graph = svg.append('g')
- //                .append('path')
- //                .datum(dataset)
- //                .attr('d', drawArea)
- //                .attr('fill', 'black')
- //                .attr('transform', 'translate(' + margins.left + ',0)')
- //                .classed('hidden', true);
 
   var drawArea = d3.area()
                    .curve(d3.curveCatmullRom.alpha(0))
@@ -595,18 +589,12 @@ var draw_new_svg = function(data, student, averages){
                         .x(function(d, i){ return xScale(i + 1); })
                         .y(function(d, i){ return yScale(d);})
                         .curve(d3.curveCatmullRom.alpha(0));
-                        // if (change < 0){
-                        //   return '#4286f4'
-                        // }else if(change > 0){
-                        //   return '#f2a61a'
-                        // }else if(change == 0){
-                        //   return '#918988'
-                        // };
+
    var area_graph = graph.append('path')
                          .datum(data)
                          .attr('d', drawArea)
                          .attr('fill', function(d, i){
-                           return '#66d6af'
+                           return colors[2]
                          })
                          .classed('hidden', true);
   graph.append('g')
@@ -638,7 +626,7 @@ var draw_new_svg = function(data, student, averages){
                    .attr('cx', function(d, i){ return xScale(i+1)})
                    .attr('cy', function(d, i){ return yScale(d.total_percentage); })
                    .attr('r', 5)
-                   .attr('fill', 'blue')
+                   .attr('fill', colors[3])
                    .on('mouseover', function(d, i){
                      var circle = d3.select(this);
                      var tooltip_size = {
@@ -666,7 +654,7 @@ var draw_new_svg = function(data, student, averages){
                                        .attr('y', 0)
                                        .attr('width', tooltip_size.width)
                                        .attr('height', tooltip_size.height)
-                                       .attr('fill', 'yellow')
+                                       .attr('fill', colors[4])
                       var texts = [
                         'Day '+d.span[0] + " – Day "+d.span[1],
                         'Total Percent:'+d.total_percentage,
@@ -685,6 +673,7 @@ var draw_new_svg = function(data, student, averages){
                                return (i + 1) * (tooltip_height/texts.length);
                              })
                              .text(function(d, i){ return d; })
+                             .attr('stroke', colors[5])
                    })
                    .on('mouseout', function(d, i){
                      var circle = d3.select(this);
@@ -696,18 +685,18 @@ var draw_new_svg = function(data, student, averages){
                                       //   d3.select(this).remove()
                                       // });
                    })
-       var line_thickness = 1;
+       var line_thickness = 2;
        var line_graph = graph.append('path')
                            .datum(data)
                            .attr('d', drawLine)
                            .attr('stroke-width', line_thickness)
-                           .attr('stroke', 'black')
+                           .attr('stroke', colors[0])
                            .attr('fill', 'none')
        var average_line = graph.append('path')
                             .datum(averages)
                             .attr('d', drawAverage)
                             .attr('stroke-width', line_thickness)
-                            .attr('stroke', '#ab5eff')
+                            .attr('stroke', colors[1])
                             .attr('fill', 'none')
        var text_options_sizes = {
          width:universal_width,
@@ -766,9 +755,9 @@ var draw_new_svg = function(data, student, averages){
                     .attr('transform', 'translate('+graph_size.width+','+(universal_margins.top + (universal_height * 0.5) +graph_margins.top)+')')
                     .classed('Legend', true)
     var text_colors = [
-      ['#ab5eff', 'Average Line'],
-      ['black', 'Student Line'],
-      ['#66d6af', 'Change From Class Average']
+      [colors[1], 'Average Line'],
+      [colors[0], 'Student Line'],
+      [colors[2], 'Change From Class Average']
     ]
     legend.selectAll('rect')
           .data(text_colors)
